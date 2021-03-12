@@ -1,9 +1,12 @@
-FROM ubuntu:latest
+FROM golang:1.11-alpine AS build
 
-RUN apt-get update && apt-get install -y -q nginx
+LABEL "purpose"="Go Application Service Deployment"
+WORKDIR /src/
 
-COPY ./index.html / /usr/share/nginx/html/
+COPY main.go go.* /src/
+RUN CGO_ENABLED=0 go build -o /bin/demo
 
-EXPOSE 80
+FROM scratch
+COPY --from=build /bin/demo /bin/demo
+ENTRYPOINT ["/bin/demo"]
 
-CMD ["nginx", "-g", "daemon off;"]
